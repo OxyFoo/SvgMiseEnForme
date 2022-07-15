@@ -41,6 +41,15 @@ def tprint(array) :
         print(array[i])
         print("*" * 30)
 
+def functionLinear(thisLine): 
+    newLine = ""
+    while (thisLine != "" or len(thisLine)>10) : 
+        line, thisLine = getStringEntre(thisLine, "<" , ">")
+        if (line.find("stop") != -1) : line = "\t\t" + line
+        elif (line.find("</") != -1) : line = "\t" + line 
+        newLine += line + "\n"
+    return newLine
+
 print("==========================================================================================================================================================================================================================================================================================================================================")
 
 directory = 'test'
@@ -51,6 +60,8 @@ for filename in os.listdir(directory):
         bprint(f) 
         if os.path.isfile(f):
             with open(f, 'rb') as svgf:
+                svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">'
+
                 groups = []
                 lastText = ""
                 contents = svgf.read()
@@ -58,7 +69,8 @@ for filename in os.listdir(directory):
 
                 # style
                 styleText, lastText = getStringEntre(contents, "<style" , "</style>")
-                #bprint(styleText)
+                svg += "\n" + styleText 
+
                 """ idée de features : 
                         - regarder si le st apparait > 1 fois sinon inutile """
 
@@ -69,14 +81,6 @@ for filename in os.listdir(directory):
                 #tprint(groups)
 
                 # traitement des groupes 
-
-                """ Trucs à gérer : 
-                            - Path 
-                            - Linear Gradient 
-                            - ellipse 
-                            - autre ? 
-                    """
-                
                 for i in range(len(groups)) : 
                     thisGroup, lastText = getStringEntre(groups[i], '<g id="' , ">") 
                     nbLignes = groups[i].count("<path") + groups[i].count("<linearGradient") + groups[i].count("<ellipse") # on compte le nombre d'élements  
@@ -85,18 +89,21 @@ for filename in os.listdir(directory):
                         category, _ = getStringEntre(lastText, '<' , ' ') # on chope le category (path, linear, ellipse) 
                         category = category[1:].replace(" ","")
                         if (category == "linearGradient") : 
-                            print("linear")
-                            thisLine, lastText = getStringEntre(lastText, '<linearGradient' , "</linearGradient>") 
+                            thisLine, lastText = getStringEntre(lastText, '<linearGradient' , "</linearGradient>") # on récupère le bloc linearGradient 
+                            thisLine = functionLinear(thisLine) # on le remet de belle manière 
                         elif (category == "path") :
-                            print("path")
-                            thisLine, lastText = getStringEntre(lastText, '<path' , "/>") 
+                            thisLine, lastText = getStringEntre(lastText, '<path' , "/>")
+                            thisLine = thisLine.replace("\n","").replace("\t", "").replace(" ","")
                         elif (category == "ellipse") :
-                            print("ellipse")
                             thisLine, lastText = getStringEntre(lastText, '<ellipse' , "/>")
                         else : 
                             print("Chelou ton truc là, t'es sûr du : " + filename) 
                             break 
+                        thisLine = "\t" + thisLine 
                         thisGroup = thisGroup + "\n" + thisLine
                     groups[i] = thisGroup # on met à jour le groupe et on passe au suivant 
-                    bprint(thisGroup)
-
+                    thisGroup = thisGroup + "\n" + "</g>" # on ferme le groupe 
+                    svg += "\n" + thisGroup
+                
+                svg += "\n" + "</svg>"
+                bprint(svg)
