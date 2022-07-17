@@ -93,7 +93,7 @@ for filename in os.listdir(directory):
                             thisLine = functionLinear(thisLine) # on le remet de belle manière 
                         elif (category == "path") :
                             thisLine, lastText = getStringEntre(lastText, '<path' , "/>")
-                            thisLine = thisLine.replace("\n","").replace("\t", "").replace(" ","")
+                            thisLine = thisLine.replace("\n","").replace("\t", "").replace(" ","").replace("<path", "<path ")
                         elif (category == "ellipse") :
                             thisLine, lastText = getStringEntre(lastText, '<ellipse' , "/>")
                         else : 
@@ -106,4 +106,11 @@ for filename in os.listdir(directory):
                     svg += "\n" + thisGroup
                 
                 svg += "\n" + "</svg>"
+                svg = svg.replace('"d="','" d="').replace('"style="','" style="')
                 bprint(svg)
+
+                with open(directory + "/new"+filename, 'x') as finalSvg:
+                    # finalSvg.write(contents)
+                    finalSvg.write(svg)
+                    finalSvg.close()
+
