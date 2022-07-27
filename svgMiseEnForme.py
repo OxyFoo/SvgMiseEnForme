@@ -66,6 +66,7 @@ for filename in os.listdir(directory):
                 lastText = ""
                 contents = svgf.read()
                 contents = contents.decode('utf8').replace("'", '"')
+                endNextGroup = False  
 
                 # style
                 styleText, lastText = getStringEntre(contents, "<style" , "</style>")
@@ -78,17 +79,25 @@ for filename in os.listdir(directory):
                 while ((len(lastText) > 10) or lastText.replace(" ", "").replace("\n","").replace("\t","") != "</svg>") : 
                     groupeText, lastText = getStringEntre(lastText, '<g id="' , "</g>")
                     groups.append(groupeText)
-                #tprint(groups)
+
+                # histoire de valider le groupe et d'enlever les groupes vides 
+                validGroups = []
+                for i in range(len(groups)) : 
+                    if groups[i] != "" : validGroups.append(groups[i])
+
+                groups = validGroups      
 
                 # traitement des groupes 
                 for i in range(len(groups)) : 
                     thisGroup, lastText = getStringEntre(groups[i], '<g id="' , ">") 
-                    nbLignes = groups[i].count("<path") + groups[i].count("<linearGradient") + groups[i].count("<ellipse") # on compte le nombre d'élements  
-                    _, lastText = getStringEntre(lastText, '<g' , '>')
+                    nbLignes = lastText.count("<g") + lastText.count("<path") + lastText.count("<linearGradient") + lastText.count("<ellipse") # on compte le nombre d'élements  
+                    #_, lastText = getStringEntre(lastText, '<g' , '>')
                     for j in range(nbLignes):
                         category, _ = getStringEntre(lastText, '<' , ' ') # on chope le category (path, linear, ellipse) 
                         category = category[1:].replace(" ","")
-                        if (category == "linearGradient") : 
+                        if (category == "g") :
+                            thisLine, lastText = getStringEntre(lastText, '<g' , ">")
+                        elif (category == "linearGradient") : 
                             thisLine, lastText = getStringEntre(lastText, '<linearGradient' , "</linearGradient>") # on récupère le bloc linearGradient 
                             thisLine = functionLinear(thisLine) # on le remet de belle manière 
                         elif (category == "path") :
@@ -98,19 +107,26 @@ for filename in os.listdir(directory):
                             thisLine, lastText = getStringEntre(lastText, '<ellipse' , "/>")
                         else : 
                             print("Chelou ton truc là, t'es sûr du : " + filename) 
-                            break 
+                            continue 
                         thisLine = "\t" + thisLine 
                         thisGroup = thisGroup + "\n" + thisLine
-                    groups[i] = thisGroup # on met à jour le groupe et on passe au suivant 
+                    # groups[i] = thisGroup # je suis pas sur de l'interet de ceci 
                     thisGroup = thisGroup + "\n" + "</g>" # on ferme le groupe 
+                    if (endNextGroup) : thisGroup = thisGroup + "\n" + "</g>" # on ferme le groupe une seconde fois 
+                    if (groups[i].count("<g") == 2) : endNextGroup = True # pour dire qu'au prochain tour on doit fermer 2 groupes 
+                    else : endNextGroup = False
+                    #bprint(thisGroup)
+                    
                     svg += "\n" + thisGroup
                 
                 svg += "\n" + "</svg>"
-                svg = svg.replace('"d="','" d="').replace('"style="','" style="')
-                bprint(svg)
-
-                with open(directory + "/new"+filename, 'x') as finalSvg:
+                svg = svg.replace('"d="','" d="').replace('"style="','" style="').replace('"class="', '" class="')
+                #bprint(svg)
+            
+                
+                with open(directory + "/new/"+filename, 'x') as finalSvg:
                     # finalSvg.write(contents)
                     finalSvg.write(svg)
                     finalSvg.close()
+                
 
