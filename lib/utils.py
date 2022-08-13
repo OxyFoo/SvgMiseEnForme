@@ -92,3 +92,47 @@ def getStringBetween(text, firstWord, lastWord, keepAroundWords = True):
         output['length'] = lastPos - firstPos
         output['content'] = text[firstPos + len(firstWord):lastPos + len(firstWord)]
     return output
+
+def GetFileContent(filePath, cleanContent = True):
+    '''
+    Get the content of a file.
+
+    Parameters
+    ----------
+    filePath : str
+        The path of the file.
+
+    Returns
+    -------
+    str
+        The content of the file.
+    '''
+
+    file = open(filePath, 'rb')
+    fileContent = file.read()
+    fileContent = fileContent.decode('utf8')
+    file.close()
+
+    if cleanContent:
+        # Remove useless lines
+        removeChars = [ '\n', '\r', '\t' ]
+        for char in removeChars:
+            fileContent = fileContent.replace(char, '')
+
+    return fileContent
+
+def SaveFileContent(filePath, fileContent):
+    '''
+    Save the content of a file.
+
+    Parameters
+    ----------
+    filePath : str
+        The path of the file.
+    fileContent : str
+        The content of the file.
+    '''
+
+    file = open(filePath, 'wb')
+    file.write(fileContent.encode('utf8'))
+    file.close()

@@ -1,4 +1,5 @@
 from lib.config import Config
+from lib.style import Style
 from lib.utils import Debug, getStringBetween
 
 class Tag:
@@ -191,7 +192,20 @@ class Tag:
             if child.isOpen:
                 child.removeAttributes(tagName, attributes)
 
-    def parse(self, content):
+    def load(self, content):
+        '''
+        Load the tag from the content.
+
+        Parameters
+        ----------
+        content : str
+            The content of the tag.
+        '''
+
+        Style.reset()
+        self.__parse(content)
+
+    def __parse(self, content):
         '''
         Parse the content of the tag.
 
@@ -229,7 +243,7 @@ class Tag:
 
         # Set attributes
         tagAttributes = tagAttributesInfo['content']
-        self.parseAttributes(tagAttributes)
+        self.__parseAttributes(tagAttributes)
         Debug(2, 'Attr: ' + tagAttributes)
 
         # Get children from content for open tags
@@ -244,8 +258,7 @@ class Tag:
             Debug(2, 'Cont: ' + tagContent)
 
             if tag == 'style':
-                # TODO - Parse style content
-                Debug(1, 'Error: style tag not supported')
+                Style.parse(tagContent)
                 return
 
             # Get all groups
@@ -275,15 +288,14 @@ class Tag:
                 # Add child tag to self
                 childTag = childTagFullInfo['content']
                 newTag = Tag()
-                newTag.isOpen = childTagIsOpen
-                newTag.parse(childTag)
+                newTag.__parse(childTag)
                 self.__addChild(newTag)
 
                 # Remove child tag from content
                 tagContent = tagContent.replace(childTag, '', 1)
                 Debug(2, 'Remove: ' + childTag)
 
-    def parseAttributes(self, content):
+    def __parseAttributes(self, content):
         '''
         Parse the attributes of the tag.
 
@@ -321,3 +333,17 @@ class Tag:
         tagName = '<' + tagName
         newContent = content.split(tagName)[1].split('>')[0].strip()
         return not newContent.endswith('/')
+
+    def applyStyles(self):
+        '''
+        Apply the styles to the tags.
+        '''
+
+        for child in self.__getChildren():
+            className = child.getAttribute('class')
+            if className is not None and className in Style.styles:
+                attributes = Style.styles[className]
+                for attribute in attributes:
+                    child.addAttribute(attribute, attributes[attribute])
+                child.remAttribute('class')
+            child.applyStyles()

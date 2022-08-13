@@ -7,67 +7,48 @@ __author__ = "Gérémy Lecaplain"
 __copyright__ = "Oxyfoo"
 __version__ = "1.0"
 
-# TODO
-# - Parse style content
-
 import os
 from lib.config import Config
 from lib.tag import Tag
-from lib.utils import checkPythonVersion, defineHandler, printFullLine
+from lib.utils import GetFileContent, SaveFileContent, checkPythonVersion, defineHandler, printFullLine
+
+# Config
+Config.dirRaw = './raw'
+Config.dirSvg = './svg'
+Config.DEBUG_LEVEL = 1
+Config.identSpace = '    '
 
 checkPythonVersion()
 defineHandler()
-
-# Config
-dirRaw = './raw'
-dirSvg = './svg'
-Config.identSpace = '    '
-
-# Directories & files verifications
-if not os.path.isdir(dirRaw):   os.mkdir(dirRaw)
-if not os.listdir(dirRaw):      exit('Directory "' + dirRaw + '" is empty.\nAborted...')
-if not os.path.isdir(dirSvg):   os.mkdir(dirSvg)
-if os.listdir(dirSvg):
-    response = input('Directory "' + dirSvg + '" is not empty, remove all files ? (y/N) : ')
-    if response.lower() != 'y': exit('Aborted...')
-    for file in os.listdir(dirSvg):
-        os.remove(dirSvg + '/' + file)
+Config.CheckFolders()
 
 
 
 printFullLine()
 
-svgFiles = os.listdir(dirRaw)
+svgFiles = os.listdir(Config.dirRaw)
 for filename in svgFiles:
-    filepath = os.path.join(dirRaw, filename)
+    # Check if file is a valid svg file
+    filepath = os.path.join(Config.dirRaw, filename)
+    newFilePath = os.path.join(Config.dirSvg, filename)
     if not filepath.endswith(".svg"): continue
     if not os.path.isfile(filepath): continue
 
     print('Processing file "' + filename + '"')
 
-    # Get file content
-    svgFile = open(filepath, 'rb')
-    svgContent = svgFile.read()
-    svgContent = svgContent.decode('utf8')
-    svgFile.close()
-
-    # Remove useless lines
-    removeChars = [ '\n', '\r', '\t' ]
-    for char in removeChars:
-        svgContent = svgContent.replace(char, '')
-
-    # Parse file content
+    # Get svg content & parse it
+    svgContent = GetFileContent(filepath)
     svg = Tag()
-    svg.parse(svgContent)
+    svg.load(svgContent)
 
     # Edit svg content
+    svg.removeTag('style')
+    svg.applyStyles()
+
     #svg.removeTags(['style', 'stop'])
     #svg.keepAttributes('path', ['id', 'd'])
     #svg.removeAttributes('path', ['id'])
 
-    # Save the new file
-    svgFile = open(os.path.join(dirSvg, filename), 'w')
-    svgFile.write(str(svg))
-    svgFile.close()
+    SaveFileContent(newFilePath, str(svg))
 
 printFullLine()
