@@ -3,7 +3,7 @@ class Config:
     Configuration class.
     '''
 
-    DEBUG_LEVEL = 2
+    DEBUG_LEVEL = 1
     '''
     Debug level.
     0: No debug
@@ -11,42 +11,8 @@ class Config:
     2: Debug + verbose
     '''
 
-    openTag = [
-        'svg',
-        'style',
-        'g',
-        'linearGradient'
-    ]
-    keepTag = [
-        'svg',
-        'g',
-        'linearGradient',
-        'path',
-        'rect',
-        'circle',
-        'ellipse',
-        'polygon',
-        'polyline',
-        'line',
-        'text',
-        'tspan',
-        'textPath',
-        'tref',
-        'title',
-        'desc',
-        'metadata',
-        'defs',
-        'symbol',
-        'use',
-        'image',
-        'pattern',
-        'mask',
-        'clipPath',
-        'filter'
-    ]
-    keepAttributes = {
-        'svg': [
-            'xmlns',
-            'viewBox'
-        ]
-    }
+    identSpace = '    '
+    '''
+    Space to use for identation. (4 spaces or so)
+    Set to None to disable identation and show all the tags on one line.
+    '''

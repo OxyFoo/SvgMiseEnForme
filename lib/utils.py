@@ -1,5 +1,20 @@
-import os
+import os, sys, signal
 from lib.config import Config
+
+def checkPythonVersion():
+    '''
+    Check the Python version.
+    '''
+    if sys.version_info[0] < 3:
+        print("This program requires Python 3.x")
+        sys.exit(1)
+
+def defineHandler():
+    signal.signal(signal.SIGINT, handler)
+
+def handler(signum, frame):
+    print('\nAborted...')
+    exit(1)
 
 def Debug(level, message):
     '''
@@ -9,11 +24,16 @@ def Debug(level, message):
     ----------
     level : int
         The debug level.
+        0: No debug
+        1: Debug -> Errors / warnings
+        2: Debug + verbose
     message : str
         The message to print.
     '''
     if Config.DEBUG_LEVEL >= level:
+        if level == 1: print('\033[91m', end='')
         print(message)
+        if level == 1: print('\033[0m', end='')
 
 def printFullLine(char = '=', length = None):
     '''

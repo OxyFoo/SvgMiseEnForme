@@ -1,10 +1,27 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__name__ = "svg-format"
+__doc__ = "SVG parsing tool"
+__author__ = "Gérémy Lecaplain"
+__copyright__ = "Oxyfoo"
+__version__ = "1.0"
+
+# TODO
+# - Parse style content
+
 import os
+from lib.config import Config
 from lib.tag import Tag
-from lib.utils import printFullLine
+from lib.utils import checkPythonVersion, defineHandler, printFullLine
+
+checkPythonVersion()
+defineHandler()
 
 # Config
 dirRaw = './raw'
 dirSvg = './svg'
+Config.identSpace = '    '
 
 # Directories & files verifications
 if not os.path.isdir(dirRaw):   os.mkdir(dirRaw)
@@ -42,7 +59,11 @@ for filename in svgFiles:
     # Parse file content
     svg = Tag()
     svg.parse(svgContent)
-    #svg.removeUnusedTags()
+
+    # Edit svg content
+    #svg.removeTags(['style', 'stop'])
+    #svg.keepAttributes('path', ['id', 'd'])
+    #svg.removeAttributes('path', ['id'])
 
     # Save the new file
     svgFile = open(os.path.join(dirSvg, filename), 'w')
