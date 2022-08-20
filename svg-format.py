@@ -10,7 +10,8 @@ __version__ = "1.0"
 import os
 from lib.config import Config
 from lib.tag import Tag
-from lib.utils import GetFileContent, SaveFileContent, checkPythonVersion, defineHandler, printFullLine
+from lib.utils import Debug, GetFileContent, SaveFileContent, checkPythonVersion, defineHandler, printFullLine
+from lib.reactnative import SvgToRN
 
 # Config
 Config.dirRaw = './raw'
@@ -34,7 +35,7 @@ for filename in svgFiles:
     if not filepath.endswith(".svg"): continue
     if not os.path.isfile(filepath): continue
 
-    print('Processing file "' + filename + '"')
+    Debug(0, 'Processing file "' + filename + '"')
 
     # Get svg content & parse it
     svgContent = GetFileContent(filepath)
@@ -44,11 +45,15 @@ for filename in svgFiles:
     # Edit svg content
     svg.removeTag('style')
     svg.applyStyles()
-
     #svg.removeTags(['style', 'stop'])
     #svg.keepAttributes('path', ['id', 'd'])
     #svg.removeAttributes('path', ['id'])
 
+    # Convert & parse react-native format
+    svg = SvgToRN(svg)
+    if svg is None: continue
+
+    # Save new svg content
     SaveFileContent(newFilePath, str(svg))
 
 printFullLine()

@@ -204,6 +204,7 @@ class Tag:
 
         Style.reset()
         self.__parse(content)
+        Debug(0, 'SVG parsed')
 
     def __parse(self, content):
         '''

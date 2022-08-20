@@ -133,6 +133,11 @@ def SaveFileContent(filePath, fileContent):
         The content of the file.
     '''
 
-    file = open(filePath, 'wb')
-    file.write(fileContent.encode('utf8'))
-    file.close()
+    try:
+        file = open(filePath, 'wb')
+        file.write(fileContent.encode('utf8'))
+        file.close()
+        Debug(0, 'New SVG saved')
+    except Exception as e:
+        Debug(0, 'Error: SVG not saved')
+        Debug(1, e)
