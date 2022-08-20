@@ -14,9 +14,8 @@ class Tag:
 
         self.tag = None
         self.attributes = {}
-        self.children = []
+        self.children: list[Tag] = []
         self.isOpen = False
-        #self.parse(content)
 
     def __str__(self, level=0):
         '''

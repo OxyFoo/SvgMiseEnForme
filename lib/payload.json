@@ -10,7 +10,7 @@
         "expandProps":"end",
         "replaceAttrValues":{},
         "svgProps":{},
-        "svgo":true,
+        "svgo":false,
         "svgoConfig":{
             "plugins":[
                 {
@@ -23,7 +23,7 @@
                 }
             ]
         },
-        "prettier":true,
+        "prettier":false,
         "prettierConfig":{
             "semi":false
         }

@@ -5,6 +5,11 @@ class Config:
     Configuration class.
     '''
 
+    clearOnStart = True
+    '''
+    Clear the console on start.
+    '''
+
     dirRaw = './raw'
     '''
     Directory containing the raw svg files.
@@ -27,6 +32,11 @@ class Config:
     '''
     Space to use for identation. (4 spaces or so)
     Set to None to disable identation and show all the tags on one line.
+    '''
+
+    convertToRN = True
+    '''
+    Convert parsed svg content to react-native format.
     '''
 
     def CheckFolders():

@@ -1,13 +1,16 @@
 import os, sys, signal
 from lib.config import Config
 
-def checkPythonVersion():
+def Init():
     '''
     Check the Python version.
     '''
     if sys.version_info[0] < 3:
         print("This program requires Python 3.x")
         sys.exit(1)
+
+    if Config.clearOnStart:
+        os.system('cls||clear')
 
 def defineHandler():
     signal.signal(signal.SIGINT, handler)
@@ -93,25 +96,37 @@ def getStringBetween(text, firstWord, lastWord, keepAroundWords = True):
         output['content'] = text[firstPos + len(firstWord):lastPos + len(firstWord)]
     return output
 
-def GetFileContent(filePath, cleanContent = True):
+def GetFileContent(filename: str, cleanContent: bool = True):
     '''
     Get the content of a file.
 
     Parameters
     ----------
-    filePath : str
-        The path of the file.
+    filename : str
+        The name of the file.
 
     Returns
     -------
     str
-        The content of the file.
+        The content of the file or None if failed.
     '''
 
-    file = open(filePath, 'rb')
-    fileContent = file.read()
-    fileContent = fileContent.decode('utf8')
-    file.close()
+    # Check if file is a valid svg file
+    filepath = os.path.join(Config.dirRaw, filename)
+    if not filepath.endswith(".svg"): return None
+    if not os.path.isfile(filepath): return None
+    Debug(0, 'Processing file "' + filename + '"')
+
+    # Get file content
+    try:
+        file = open(filepath, 'rb')
+        fileContent = file.read()
+        fileContent = fileContent.decode('utf8')
+        file.close()
+    except Exception as e:
+        Debug(0, 'Error: SVG not read')
+        Debug(1, e)
+        return None
 
     if cleanContent:
         # Remove useless lines
@@ -121,20 +136,23 @@ def GetFileContent(filePath, cleanContent = True):
 
     return fileContent
 
-def SaveFileContent(filePath, fileContent):
+def SaveFileContent(filename: str, fileContent: str):
     '''
     Save the content of a file.
 
     Parameters
     ----------
-    filePath : str
+    filename : str
         The path of the file.
     fileContent : str
         The content of the file.
     '''
 
+    filename = '.'.join(filename.split('.')[:-1])
+    filename += '.js' if Config.convertToRN else '.svg'
+    filepath = os.path.join(Config.dirSvg, filename)
     try:
-        file = open(filePath, 'wb')
+        file = open(filepath, 'wb')
         file.write(fileContent.encode('utf8'))
         file.close()
         Debug(0, 'New SVG saved')

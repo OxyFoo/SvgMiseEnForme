@@ -10,35 +10,33 @@ __version__ = "1.0"
 import os
 from lib.config import Config
 from lib.tag import Tag
-from lib.utils import Debug, GetFileContent, SaveFileContent, checkPythonVersion, defineHandler, printFullLine
+from lib.utils import Debug, GetFileContent, SaveFileContent, Init, defineHandler, printFullLine
 from lib.reactnative import SvgToRN
 
 # Config
+Config.clearOnStart = True
 Config.dirRaw = './raw'
 Config.dirSvg = './svg'
 Config.DEBUG_LEVEL = 1
 Config.identSpace = '    '
+Config.convertToRN = True
 
-checkPythonVersion()
+Init()
 defineHandler()
 Config.CheckFolders()
 
 
 
+startTime = os.times()
 printFullLine()
 
 svgFiles = os.listdir(Config.dirRaw)
 for filename in svgFiles:
-    # Check if file is a valid svg file
-    filepath = os.path.join(Config.dirRaw, filename)
-    newFilePath = os.path.join(Config.dirSvg, filename)
-    if not filepath.endswith(".svg"): continue
-    if not os.path.isfile(filepath): continue
+    # Get svg content
+    svgContent = GetFileContent(filename)
+    if svgContent is None: continue
 
-    Debug(0, 'Processing file "' + filename + '"')
-
-    # Get svg content & parse it
-    svgContent = GetFileContent(filepath)
+    # Parse svg content
     svg = Tag()
     svg.load(svgContent)
 
@@ -50,10 +48,14 @@ for filename in svgFiles:
     #svg.removeAttributes('path', ['id'])
 
     # Convert & parse react-native format
-    svg = SvgToRN(svg)
-    if svg is None: continue
+    if Config.convertToRN:
+        svg = SvgToRN(svg)
+        if svg is None: continue
 
     # Save new svg content
-    SaveFileContent(newFilePath, str(svg))
+    SaveFileContent(filename, str(svg))
 
 printFullLine()
+endTime = os.times()
+elapsedTime = round(endTime[0] - startTime[0], 2)
+Debug(0, 'SVG files parsed in {} seconds'.format(elapsedTime))
