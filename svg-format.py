@@ -9,8 +9,9 @@ __version__ = "1.0"
 
 import os
 from lib.config import Config
+from lib.utils import GetFileContent, SaveFileContent, Init, DefineHandler, PrintFullLine
+from lib.debug import Debug
 from lib.tag import Tag
-from lib.utils import Debug, GetFileContent, SaveFileContent, Init, defineHandler, printFullLine
 from lib.reactnative import SvgToRN
 
 # Config
@@ -22,13 +23,13 @@ Config.identSpace = '    '
 Config.convertToRN = True
 
 Init()
-defineHandler()
+DefineHandler()
 Config.CheckFolders()
 
 
 
 startTime = os.times()
-printFullLine()
+PrintFullLine()
 
 svgFiles = os.listdir(Config.dirRaw)
 for filename in svgFiles:
@@ -55,7 +56,7 @@ for filename in svgFiles:
     # Save new svg content
     SaveFileContent(filename, str(svg))
 
-printFullLine()
+PrintFullLine()
 endTime = os.times()
 elapsedTime = round(endTime[0] - startTime[0], 2)
-Debug(0, 'SVG files parsed in {} seconds'.format(elapsedTime))
+Debug.Info('SVG files parsed in {} seconds'.format(elapsedTime))

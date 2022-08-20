@@ -1,6 +1,7 @@
 from lib.config import Config
 from lib.style import Style
-from lib.utils import Debug, getStringBetween
+from lib.utils import getStringBetween
+from lib.debug import Debug
 
 class Tag:
     '''
@@ -28,7 +29,7 @@ class Tag:
         '''
 
         if self.tag is None:
-            Debug(1, 'Error: tag not initialized')
+            Debug.Error('Tag not initialized')
             return ''
 
         # Get self attributes & children
@@ -67,7 +68,7 @@ class Tag:
         '''
         self.attributes[name] = value
 
-    def getAttribute(self, name):
+    def getAttribute(self, name) -> str:
         '''
         Get the value of an attribute.
 
@@ -203,7 +204,7 @@ class Tag:
 
         Style.reset()
         self.__parse(content)
-        Debug(0, 'SVG parsed')
+        Debug.Info('SVG parsed')
 
     def __parse(self, content):
         '''
@@ -225,37 +226,37 @@ class Tag:
         # Get tag informations
         tagInfo = getStringBetween(content, '<', ' ', False)
         if tagInfo is None:
-            Debug(1, 'Error: tag not found')
-            Debug(1, 'Content: ' + content)
+            Debug.Error('Tag not found')
+            Debug.Log('Content: ' + content)
             return
 
         # Set tag
         tag = tagInfo['content']
         self.tag = tag
         self.isOpen = Tag.__tagIsOpen(tag, content)
-        Debug(2, '- ' + tag + ' (' + ('is open' if self.isOpen else 'not open') + ')')
+        Debug.Log('- ' + tag + ' (' + ('is open' if self.isOpen else 'not open') + ')')
 
         # Get attributes
         tagAttributesInfo = getStringBetween(content, '<' + tag, '>', False)
         if tagAttributesInfo is None:
-            Debug(1, 'Error: attributes not found')
+            Debug.Error('Attributes not found')
             return
 
         # Set attributes
         tagAttributes = tagAttributesInfo['content']
         self.__parseAttributes(tagAttributes)
-        Debug(2, 'Attr: ' + tagAttributes)
+        Debug.Log('Attr: ' + tagAttributes)
 
         # Get children from content for open tags
         if self.isOpen:
             # Get content
             tagContentInfo = getStringBetween(content[tagInfo['pos'] + len(tag) + 1:], '>', '</' + tag + '>', False)
             if tagContentInfo is None:
-                Debug(1, 'Error: tag content not found')
+                Debug.Error('Tag content not found')
                 return
 
             tagContent = tagContentInfo['content']
-            Debug(2, 'Cont: ' + tagContent)
+            Debug.Log('Cont: ' + tagContent)
 
             if tag == 'style':
                 Style.parse(tagContent)
@@ -263,13 +264,13 @@ class Tag:
 
             # Get all groups
             while tagContent:
-                Debug(2, '-------------------')
+                Debug.Log('-------------------')
                 tagContent = tagContent.strip()
 
                 # Get first tag
                 childTagInfo = getStringBetween(tagContent, '<', ' ', False)
                 if childTagInfo is None:
-                    Debug(1, 'Error: child tag not found')
+                    Debug.Error('Child tag not found')
                     return
 
                 # Get all first child content
@@ -282,7 +283,7 @@ class Tag:
                 else:
                     childTagFullInfo = getStringBetween(tagContent, '<' + childTag, '/>', True)
                 if childTagFullInfo is None:
-                    Debug(1, 'Error: tagFull is None (childTag: ' + childTag + ')')
+                    Debug.Error('TagFull is None (childTag: ' + childTag + ')')
                     return
 
                 # Add child tag to self
@@ -293,7 +294,7 @@ class Tag:
 
                 # Remove child tag from content
                 tagContent = tagContent.replace(childTag, '', 1)
-                Debug(2, 'Remove: ' + childTag)
+                Debug.Log('Remove: ' + childTag)
 
     def __parseAttributes(self, content):
         '''

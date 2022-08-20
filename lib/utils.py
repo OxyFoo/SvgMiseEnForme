@@ -1,5 +1,9 @@
-import os, sys, signal
+import os
+import sys
+import signal
+
 from lib.config import Config
+from lib.debug import Debug
 
 def Init():
     '''
@@ -10,35 +14,16 @@ def Init():
         sys.exit(1)
 
     if Config.clearOnStart:
-        os.system('cls||clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
 
-def defineHandler():
+def DefineHandler():
     signal.signal(signal.SIGINT, handler)
 
 def handler(signum, frame):
     print('\nAborted...')
     exit(1)
 
-def Debug(level, message):
-    '''
-    Print a debug message.
-
-    Parameters
-    ----------
-    level : int
-        The debug level.
-        0: No debug
-        1: Debug -> Errors / warnings
-        2: Debug + verbose
-    message : str
-        The message to print.
-    '''
-    if Config.DEBUG_LEVEL >= level:
-        if level == 1: print('\033[91m', end='')
-        print(message)
-        if level == 1: print('\033[0m', end='')
-
-def printFullLine(char = '=', length = None):
+def PrintFullLine(char = '=', length = None):
     '''
     Print a line of characters of a given length.
 
@@ -115,7 +100,7 @@ def GetFileContent(filename: str, cleanContent: bool = True):
     filepath = os.path.join(Config.dirRaw, filename)
     if not filepath.endswith(".svg"): return None
     if not os.path.isfile(filepath): return None
-    Debug(0, 'Processing file "' + filename + '"')
+    Debug.Info('Processing file "' + filename + '"')
 
     # Get file content
     try:
@@ -124,8 +109,8 @@ def GetFileContent(filename: str, cleanContent: bool = True):
         fileContent = fileContent.decode('utf8')
         file.close()
     except Exception as e:
-        Debug(0, 'Error: SVG not read')
-        Debug(1, e)
+        Debug.Error('SVG not read')
+        Debug.Log(e)
         return None
 
     if cleanContent:
@@ -155,7 +140,7 @@ def SaveFileContent(filename: str, fileContent: str):
         file = open(filepath, 'wb')
         file.write(fileContent.encode('utf8'))
         file.close()
-        Debug(0, 'New SVG saved')
+        Debug.Info('New SVG saved')
     except Exception as e:
-        Debug(0, 'Error: SVG not saved')
-        Debug(1, e)
+        Debug.Error('SVG not saved')
+        Debug.Log(e)

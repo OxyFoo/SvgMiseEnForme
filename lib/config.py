@@ -23,9 +23,9 @@ class Config:
     DEBUG_LEVEL = 1
     '''
     Debug level.
-    0: No debug
-    1: Debug -> Errors / warnings
-    2: Debug + verbose
+        - 0: No debug: only info & errors
+        - 1: Simple: info, errors & warnings
+        - 2: Debug: info, errors, warnings & verbose
     '''
 
     identSpace = '    '

@@ -2,7 +2,8 @@ import json
 import requests
 
 from lib.tag import Tag
-from lib.utils import Debug, getStringBetween
+from lib.utils import getStringBetween
+from lib.debug import Debug
 
 PAYLOAD_PATH = './lib/payload.json'
 URL = 'https://api.react-svgr.com/api/svgr'
@@ -33,8 +34,9 @@ BODY_PARTS = [
     'right_leg',
     'right_foot'
 ]
+BODY_PART_OUTLINE = '_outline'
 
-def GetPayload(code: str) -> dict:
+def getPayload(code: str) -> dict:
     '''
     Get payload for the request with code.
 
@@ -50,7 +52,7 @@ def GetPayload(code: str) -> dict:
     if PAYLOAD == {}:
         f = open(PAYLOAD_PATH, 'r')
         if f is None:
-            Debug(1, 'Error: Payload file not found')
+            Debug.Error('Payload file not found')
         PAYLOAD = json.load(f)
         f.close()
 
@@ -58,7 +60,7 @@ def GetPayload(code: str) -> dict:
     newPayload['code'] = code
     return newPayload
 
-def ConvertSvgToRN(svg: str):
+def convertSvgToRN(svg: str):
     '''
     Convert svg text to react-native text.
 
@@ -73,7 +75,7 @@ def ConvertSvgToRN(svg: str):
         The react-native text or None if failed.
     '''
 
-    payload = GetPayload(svg)
+    payload = getPayload(svg)
 
     try:
         response = requests.post(URL, json=payload, headers={'User-Agent': USER_AGENT})
@@ -81,42 +83,56 @@ def ConvertSvgToRN(svg: str):
             output = response.json()
             return output['output']
         else:
-            Debug(0, 'Error: SVG conversion failed')
-            Debug(1, response.status_code)
+            Debug.Error('SVG conversion failed ({})'.format(response.status_code))
     except Exception as e:
-        Debug(0, 'Error: SVG conversion failed')
-        Debug(1, e)
+        Debug.Error('SVG conversion failed')
+        Debug.Error(e)
 
     return None
 
+def isBodyPart(id: str):
+    if id in BODY_PARTS:
+        return True
+    if id.endswith(BODY_PART_OUTLINE) and id[:-len(BODY_PART_OUTLINE)] in BODY_PARTS:
+        return True
+    return False
+
 def SvgToRN(svg: Tag):
     bodyParts = {}
+    bodyOutlines = {}
 
     # Count parts to convert
     current = 0
     total = 0
     for child in svg.children:
         id = child.getAttribute('id')
-        if id in BODY_PARTS:
+        if isBodyPart(id):
             total += 1
 
     if total == 0:
-        Debug(1, 'Error: No body parts found, abort this file')
+        Debug.Warn('No body parts found, abort this file')
         return None
 
     for child in svg.children:
         id = child.getAttribute('id')
-        if id in BODY_PARTS:
+        if isBodyPart(id):
             current += 1
-            print('\rSVG->RN conversion part: {}/{}'.format(current, total), end='')
+            print('', end='\r')
+            Debug.Info('SVG->RN conversion part: {}/{}'.format(current, total), end='')
 
-            rn = ConvertSvgToRN('<svg>' + str(child) + '</svg>')
+            rn = convertSvgToRN('<svg>' + str(child) + '</svg>')
             rn = rn.replace('\n', '')
             contentInfo = getStringBetween(rn, '<G', '</G>', True)
-            if contentInfo is None: continue
-            bodyParts[id] = contentInfo['content']
-    Debug(0, 'SVG->RN conversion done')
+            if contentInfo is None:
+                print()
+                Debug.Error('Body part "{}" not found'.format(id))
+                continue
+            if not id.endswith(BODY_PART_OUTLINE):
+                bodyParts[id] = contentInfo['content']
+            else:
+                bodyOutlines[id[:-len(BODY_PART_OUTLINE)]] = contentInfo['content']
     print()
+    Debug.Info('SVG->RN conversion done')
 
     # Get tags
     allTags = []
@@ -149,11 +165,12 @@ def SvgToRN(svg: Tag):
 
     # Make body
     body = 'const component = {\n'
-    body += '    svg: {\n'
-    for part in bodyParts:
-        content = bodyParts[part]
-        body += '        ' + part + ': ' + content + ',\n'
-    body += '    }\n'
+    body += '    svg: {\n        '
+    body += ',\n        '.join(['{}: {}'.format(part, bodyParts[part]) for part in bodyParts])
+    body += '\n    },\n'
+    body += '   outline: {\n        '
+    body += ',\n        '.join(['{}: {}'.format(part, bodyOutlines[part]) for part in bodyOutlines])
+    body += '\n    }\n'
     body += '}'
 
     # Make footer
