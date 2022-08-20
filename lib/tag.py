@@ -283,7 +283,7 @@ class Tag:
                 else:
                     childTagFullInfo = getStringBetween(tagContent, '<' + childTag, '/>', True)
                 if childTagFullInfo is None:
-                    Debug.Error('TagFull is None (childTag: ' + childTag + ')')
+                    Debug.Error('TagFull is None ({} childTag: {})'.format('open' if childTagIsOpen else 'not open', childTag))
                     return
 
                 # Add child tag to self

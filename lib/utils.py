@@ -119,6 +119,17 @@ def GetFileContent(filename: str, cleanContent: bool = True):
         for char in removeChars:
             fileContent = fileContent.replace(char, '')
 
+        # Remove comments
+        commentsInfo = ''
+        while commentsInfo != None:
+            commentsInfo = getStringBetween(fileContent, '<!--', '-->')
+            if commentsInfo != None:
+                fileContent = fileContent.replace(commentsInfo['content'], '', 1)
+
+    if fileContent.startswith('<?'):
+        # Remove XML declaration
+        fileContent = fileContent[fileContent.find('>')+1:]
+
     return fileContent
 
 def SaveFileContent(filename: str, fileContent: str):

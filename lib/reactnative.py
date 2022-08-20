@@ -136,10 +136,11 @@ def SvgToRN(svg: Tag):
 
     # Get tags
     allTags = []
-    for part in bodyParts:
+    allParts = { **bodyParts, **bodyOutlines }
+    for part in allParts:
         tag = ''
         readTag = False
-        content = bodyParts[part]
+        content = allParts[part]
 
         for character in content:
             if character == '<':
