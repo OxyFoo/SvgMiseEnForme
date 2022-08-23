@@ -169,7 +169,7 @@ def SvgToRN(svg: Tag):
     body += '    svg: {\n        '
     body += ',\n        '.join(['{}: {}'.format(part, bodyParts[part]) for part in bodyParts])
     body += '\n    },\n'
-    body += '   outline: {\n        '
+    body += '    outline: {\n        '
     body += ',\n        '.join(['{}: {}'.format(part, bodyOutlines[part]) for part in bodyOutlines])
     body += '\n    }\n'
     body += '}'
