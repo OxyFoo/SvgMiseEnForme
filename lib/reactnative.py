@@ -108,6 +108,8 @@ def SvgToRN(svg: Tag):
         id = child.getAttribute('id')
         if isBodyPart(id):
             total += 1
+        else:
+            Debug.Warn('Group "{}" is not body part!'.format(id))
 
     if total == 0:
         Debug.Warn('No body parts found, abort this file')
