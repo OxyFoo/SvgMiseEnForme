@@ -8,6 +8,7 @@ __copyright__ = "Oxyfoo"
 __version__ = "1.0"
 
 import os
+from time import time
 from lib.config import Config
 from lib.utils import GetFileContent, SaveFileContent, Init, DefineHandler, PrintFullLine
 from lib.debug import Debug
@@ -28,7 +29,7 @@ Config.CheckFolders()
 
 
 
-startTime = os.times()
+startTime = time()
 PrintFullLine()
 
 svgFiles = os.listdir(Config.dirRaw)
@@ -57,6 +58,6 @@ for filename in svgFiles:
     SaveFileContent(filename, str(svg))
 
 PrintFullLine()
-endTime = os.times()
-elapsedTime = round(endTime[0] - startTime[0], 2)
+endTime = time()
+elapsedTime = round(endTime - startTime, 2)
 Debug.Info('SVG files parsed in {} seconds'.format(elapsedTime))
