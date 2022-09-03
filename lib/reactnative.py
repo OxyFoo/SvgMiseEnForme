@@ -34,7 +34,7 @@ BODY_PARTS = [
     'right_leg',
     'right_foot'
 ]
-BODY_PART_OUTLINE = '_outline'
+BODY_PART_SHADOW = '_shadow'
 
 def getPayload(code: str) -> dict:
     '''
@@ -93,13 +93,13 @@ def convertSvgToRN(svg: str):
 def isBodyPart(id: str):
     if id in BODY_PARTS:
         return True
-    if id.endswith(BODY_PART_OUTLINE) and id[:-len(BODY_PART_OUTLINE)] in BODY_PARTS:
+    if id.endswith(BODY_PART_SHADOW) and id[:-len(BODY_PART_SHADOW)] in BODY_PARTS:
         return True
     return False
 
 def SvgToRN(svg: Tag):
     bodyParts = {}
-    bodyOutlines = {}
+    bodyShadows = {}
 
     # Count parts to convert
     current = 0
@@ -129,38 +129,39 @@ def SvgToRN(svg: Tag):
                 print()
                 Debug.Error('Body part "{}" not found'.format(id))
                 continue
-            if not id.endswith(BODY_PART_OUTLINE):
+            if not id.endswith(BODY_PART_SHADOW):
                 bodyParts[id] = contentInfo['content']
             else:
-                bodyOutlines[id[:-len(BODY_PART_OUTLINE)]] = contentInfo['content']
+                bodyShadows[id[:-len(BODY_PART_SHADOW)]] = contentInfo['content']
     print()
     Debug.Info('SVG->RN conversion done')
 
     # Get tags
     allTags = []
-    allParts = { **bodyParts, **bodyOutlines }
-    for part in allParts:
+    for part in bodyParts:
         tag = ''
         readTag = False
-        content = allParts[part]
+        content = bodyParts[part]
+        if part in bodyShadows:
+            content += bodyShadows[part]
 
         for character in content:
-            if character == '<':
-                readTag = True
+            if not readTag:
+                if character == '<':
+                    readTag = True
                 continue
-            if readTag and character == '/':
-                tag = ''
-                readTag = False
-                continue
-            if readTag and character == ' ':
-                if not tag in allTags:
-                    allTags.append(tag)
-                readTag = False
-                tag = ''
-                continue
-            if readTag:
+
+            if not character in [ ' ', '/', '>' ]:
                 tag += character
                 continue
+
+            if tag and not tag in allTags:
+                allTags.append(tag)
+
+            tag = ''
+            readTag = False
+
+    print(allTags)
 
     # Make header
     header = "import * as React from 'react';\n"
@@ -171,8 +172,8 @@ def SvgToRN(svg: Tag):
     body += '    svg: {\n        '
     body += ',\n        '.join(['{}: {}'.format(part, bodyParts[part]) for part in bodyParts])
     body += '\n    },\n'
-    body += '    outline: {\n        '
-    body += ',\n        '.join(['{}: {}'.format(part, bodyOutlines[part]) for part in bodyOutlines])
+    body += '    shadow: {\n        '
+    body += ',\n        '.join(['{}: {}'.format(part, bodyShadows[part]) for part in bodyShadows])
     body += '\n    }\n'
     body += '}'
 
