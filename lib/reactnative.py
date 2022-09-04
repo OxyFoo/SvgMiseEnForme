@@ -161,8 +161,6 @@ def SvgToRN(svg: Tag):
             tag = ''
             readTag = False
 
-    print(allTags)
-
     # Make header
     header = "import * as React from 'react';\n"
     header += "import { " + ', '.join(allTags) + " } from 'react-native-svg';"

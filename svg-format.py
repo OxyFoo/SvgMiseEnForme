@@ -34,6 +34,11 @@ PrintFullLine()
 
 svgFiles = os.listdir(Config.dirRaw)
 for filename in svgFiles:
+
+    # Print separation line
+    if filename != svgFiles[0]:
+        PrintFullLine('-', 10)
+
     # Get svg content
     svgContent = GetFileContent(filename)
     if svgContent is None: continue
